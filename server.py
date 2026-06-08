@@ -45,6 +45,19 @@ def summary():
     r = requests.get(T212_BASE + "/equity/account/summary", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
+@app.route("/debug")
+def debug():
+    key = request.args.get("key", "")
+    secret = request.args.get("secret", "")
+    results = {}
+    for endpoint in ["/equity/account/cash", "/equity/account/summary", "/equity/pies", "/equity/portfolio"]:
+        try:
+            r = requests.get(T212_BASE + endpoint, headers=get_headers(key, secret))
+            results[endpoint] = r.json()
+        except Exception as e:
+            results[endpoint] = str(e)
+    return jsonify(results)
+
 @app.route("/orders")
 def orders():
     key = request.headers.get("X-API-Key", "")
