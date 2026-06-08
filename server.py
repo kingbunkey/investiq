@@ -10,7 +10,7 @@ CORS(app)
 T212_BASE = "https://live.trading212.com/api/v0"
 
 def get_headers(api_key, api_secret):
-    credentials = base64.b64encode(f"{api_key}:{api_secret}".encode()).decode()
+    credentials = base64.b64encode("{}:{}".format(api_key, api_secret).encode()).decode()
     return {"Authorization": "Basic " + credentials}
 
 @app.route("/")
@@ -35,7 +35,14 @@ def pies():
 def account():
     key = request.headers.get("X-API-Key", "")
     secret = request.headers.get("X-API-Secret", "")
-    r = requests.get(T212_BASE + "/equity/account/info", headers=get_headers(key, secret))
+    r = requests.get(T212_BASE + "/equity/account/cash", headers=get_headers(key, secret))
+    return jsonify(r.json()), r.status_code
+
+@app.route("/summary")
+def summary():
+    key = request.headers.get("X-API-Key", "")
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/account/summary", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 @app.route("/orders")
