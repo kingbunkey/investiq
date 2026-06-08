@@ -2,14 +2,16 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 import requests
 import os
+import base64
 
 app = Flask(__name__)
 CORS(app)
 
 T212_BASE = "https://live.trading212.com/api/v0"
 
-def get_headers(api_key):
-    return {"Authorization": api_key}
+def get_headers(api_key, api_secret):
+    credentials = base64.b64encode(f"{api_key}:{api_secret}".encode()).decode()
+    return {"Authorization": "Basic " + credentials}
 
 @app.route("/")
 def index():
@@ -18,37 +20,36 @@ def index():
 @app.route("/portfolio")
 def portfolio():
     key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/portfolio", headers=get_headers(key))
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/portfolio", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 @app.route("/pies")
 def pies():
     key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/pies", headers=get_headers(key))
-    return jsonify(r.json()), r.status_code
-
-@app.route("/pie/<int:pie_id>")
-def pie_detail(pie_id):
-    key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/pies/" + str(pie_id), headers=get_headers(key))
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/pies", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 @app.route("/account")
 def account():
     key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/account/info", headers=get_headers(key))
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/account/info", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 @app.route("/orders")
 def orders():
     key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/history/orders", headers=get_headers(key))
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/history/orders", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 @app.route("/dividends")
 def dividends():
     key = request.headers.get("X-API-Key", "")
-    r = requests.get(T212_BASE + "/equity/history/dividends", headers=get_headers(key))
+    secret = request.headers.get("X-API-Secret", "")
+    r = requests.get(T212_BASE + "/equity/history/dividends", headers=get_headers(key, secret))
     return jsonify(r.json()), r.status_code
 
 if __name__ == "__main__":
